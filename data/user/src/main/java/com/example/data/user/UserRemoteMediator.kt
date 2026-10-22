@@ -16,25 +16,16 @@ import java.io.IOException
 class UserRemoteMediator(
     private val apiService: ApiService,
     private val userDao: UserDao,
-    private val database: AppDatabase
+    private val database: AppDatabase,
 ) : RemoteMediator<Int, UserEntity>() {
-
+    @Suppress("TooGenericExceptionCaught")
     override suspend fun load(
         loadType: LoadType,
-        state: PagingState<Int, UserEntity>
+        state: PagingState<Int, UserEntity>,
     ): MediatorResult {
         return try {
-            val page = when (loadType) {
-                LoadType.REFRESH -> 1
-                LoadType.PREPEND -> return MediatorResult.Success(endOfPaginationReached = true)
-                LoadType.APPEND -> {
-                    val lastItem = state.lastItemOrNull()
-                    if (lastItem == null) {
-                        1
-                    } else {
-                        state.pages.size + 1
-                    }
-                }
+            if (loadType == LoadType.PREPEND) {
+                return MediatorResult.Success(endOfPaginationReached = true)
             }
 
             when (val response = apiService.getUsers()) {

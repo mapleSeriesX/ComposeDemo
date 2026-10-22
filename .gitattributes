@@ -1,0 +1,15 @@
+# 自动检测文本文件，并强制在仓库中统一使用 LF 换行符
+* text=auto eol=lf
+
+# 指定特定类型文件必须使用 CRLF（例如 Windows 批处理脚本）
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# 指定特定类型文件必须使用 LF（例如 Shell 脚本）
+*.sh text eol=lf
+
+# 标记二进制文件，避免 Git 误操作
+*.png binary
+*.jpg binary
+*.woff binary
+# ... 根据需要添加其他二进制文件类型

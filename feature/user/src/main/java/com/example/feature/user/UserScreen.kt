@@ -39,7 +39,7 @@ import kotlinx.collections.immutable.persistentListOf
 @Composable
 fun UserScreen(
     viewModel: UserViewModel = hiltViewModel(),
-    onNavigateToDetail: (String) -> Unit = {}
+    onNavigateToDetail: (String) -> Unit = {},
 ) {
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
@@ -69,38 +69,30 @@ fun UserScreen(
     }
 
     Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) }
+        snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
         UserContent(
             state = uiState,
             onIntent = viewModel::onIntent,
-            modifier = Modifier
-                .padding(padding)
-                .imePadding()
+            modifier =
+                Modifier
+                    .padding(padding)
+                    .imePadding(),
         )
     }
 }
-<<<<<<< HEAD
-//@Composable
-//fun  sest23(){
-//    Box( contentAlignment = Alignment.Center) {
-//        CircularProgressIndicator()
-//    }
-//}
-=======
 
->>>>>>> eef75f6 (优化)
 @Composable
 fun UserContent(
     state: UserUiState,
     onIntent: (UserIntent) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     when {
         state.isLoading -> {
             Box(
                 modifier = modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) {
                 CircularProgressIndicator()
             }
@@ -110,16 +102,16 @@ fun UserContent(
             Column(
                 modifier = modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
                     text = state.errorMessage.asString(),
                     style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.error
+                    color = MaterialTheme.colorScheme.error,
                 )
                 Button(
                     onClick = { onIntent(UserIntent.Refresh) },
-                    modifier = Modifier.padding(top = 16.dp)
+                    modifier = Modifier.padding(top = 16.dp),
                 ) {
                     Text(stringResource(R.string.user_retry))
                 }
@@ -134,15 +126,16 @@ fun UserContent(
                             Text(
                                 text = user.name,
                                 style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onSurface
+                                color = MaterialTheme.colorScheme.onSurface,
                             )
                         },
-                        modifier = Modifier.trackClick(
-                            eventName = "user_item_click",
-                            params = mapOf("user_id" to user.id)
-                        ) {
-                            onIntent(UserIntent.OnUserClick(user.id))
-                        }
+                        modifier =
+                            Modifier.trackClick(
+                                eventName = "user_item_click",
+                                params = mapOf("user_id" to user.id),
+                            ) {
+                                onIntent(UserIntent.OnUserClick(user.id))
+                            },
                     )
                 }
             }
@@ -155,13 +148,15 @@ fun UserContent(
 private fun UserContentPreview() {
     MaterialTheme {
         UserContent(
-            state = UserUiState(
-                users = persistentListOf(
-                    User("1", "Alice", "https://example.com/1.png"),
-                    User("2", "Bob", "https://example.com/2.png")
-                )
-            ),
-            onIntent = {}
+            state =
+                UserUiState(
+                    users =
+                        persistentListOf(
+                            User("1", "Alice", "https://example.com/1.png"),
+                            User("2", "Bob", "https://example.com/2.png"),
+                        ),
+                ),
+            onIntent = {},
         )
     }
 }
@@ -172,7 +167,7 @@ private fun UserContentErrorPreview() {
     MaterialTheme {
         UserContent(
             state = UserUiState(errorMessage = UiText.StringResource(R.string.user_network_error_toast)),
-            onIntent = {}
+            onIntent = {},
         )
     }
 }

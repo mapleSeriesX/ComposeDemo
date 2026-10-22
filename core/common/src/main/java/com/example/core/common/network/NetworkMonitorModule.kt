@@ -9,10 +9,7 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class NetworkMonitorModule {
-
     @Binds
     @Singleton
-    abstract fun bindNetworkMonitor(
-        networkMonitor: ConnectivityManagerNetworkMonitor,
-    ): NetworkMonitor
+    abstract fun bindNetworkMonitor(networkMonitor: ConnectivityManagerNetworkMonitor): NetworkMonitor
 }

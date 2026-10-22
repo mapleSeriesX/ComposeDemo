@@ -5,20 +5,26 @@ on:
     branches: [ main, develop ]
   pull_request:
     branches: [ main, develop ]
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   # ============================================================
-  # 阶段一：快速质量门禁 (PR 和 push 时均运行)
-  # 目标：在 3-5 分钟内提供核心反馈
+  # 阶段一：快速质量门禁 (PR 和 push 均运行)
+  # 目标：3-5 分钟提供核心反馈
+  #./gradlew ktlintFormat
+  #./gradlew detekt ktlintCheck lintDevDebug testDevDebugUnitTest assembleDevDebug --parallel --stacktrace
   # ============================================================
   quick-check:
     name: Quick Quality Gate
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
 
     steps:
       - name: Checkout
@@ -30,7 +36,6 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # 关键性能优化：自动处理 Gradle 缓存
       # PR 中只读缓存，避免污染主分支缓存
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -40,27 +45,23 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      # 静态分析 (Detekt + Ktlint)
-      - name: Run Detekt
-        run: ./gradlew detekt
+      # 静态分析 + Lint + 单测 + 编译，合并为一次 Gradle 调用
+      - name: Static analysis, lint, unit tests & assemble
+        run: >
+          ./gradlew detekt ktlintCheck lintDevDebug
+          testDevDebugUnitTest assembleDevDebug
+          --parallel --stacktrace
 
-      - name: Run Ktlint
-        run: ./gradlew ktlintCheck
-
-      # 针对产品风味的精确单元测试 (以 dev 风味为例，速度最快)
-      - name: Run dev debug unit tests
-        run: ./gradlew testDevDebugUnitTest
-
-      # 编译 Debug 变体，验证编译通过
-      - name: Assemble dev debug APK
-        run: ./gradlew assembleDevDebug
-
-      # 失败时上传测试报告，方便排查
-      - name: Upload test results
-        if: failure()
+      - name: Upload reports
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results-quick
+          name: quick-check-reports
           path: |
-            **/build/test-results/
-            **/build/reports/
+            **/build/test-results/**
+            **/build/reports/tests/**
+            **/build/reports/detekt/**
+            **/build/reports/ktlint/**
+            **/build/reports/lint-results-*.html
+          retention-days: 7
+          if-no-files-found: ignore

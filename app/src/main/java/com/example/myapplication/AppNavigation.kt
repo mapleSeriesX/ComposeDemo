@@ -22,14 +22,16 @@ import com.example.feature.userDetail.UserDetailViewModel
 
 @Composable
 fun AppNavigation(repository: PreferencesRepository) {
-    val backStack = rememberSaveable(
-        saver = Saver(
-            save = { it.toList() },
-            restore = { (it as? List<*>)?.filterIsInstance<NavKey>()?.toMutableStateList() ?: mutableStateListOf(UserList) }
-        )
-    ) {
-        mutableStateListOf<NavKey>(UserList)
-    }
+    val backStack =
+        rememberSaveable(
+            saver =
+                Saver(
+                    save = { it.toList() },
+                    restore = { (it as? List<*>)?.filterIsInstance<NavKey>()?.toMutableStateList() ?: mutableStateListOf(UserList) },
+                ),
+        ) {
+            mutableStateListOf<NavKey>(UserList)
+        }
     val currentStack by remember { derivedStateOf { backStack.lastOrNull() } }
 
     LaunchedEffect(currentStack) {
@@ -41,26 +43,28 @@ fun AppNavigation(repository: PreferencesRepository) {
         onBack = {
             backStack.removeLastOrNull()
         },
-        entryDecorators = listOf(
-            rememberSaveableStateHolderNavEntryDecorator(),
-            rememberViewModelStoreNavEntryDecorator()
-        ),
-        entryProvider = entryProvider {
-            entry<UserList> {
-                UserScreen(
-                    onNavigateToDetail = { userId ->
-                        backStack.add(UserDetail(userId))
-                    }
-                )
-            }
+        entryDecorators =
+            listOf(
+                rememberSaveableStateHolderNavEntryDecorator(),
+                rememberViewModelStoreNavEntryDecorator(),
+            ),
+        entryProvider =
+            entryProvider {
+                entry<UserList> {
+                    UserScreen(
+                        onNavigateToDetail = { userId ->
+                            backStack.add(UserDetail(userId))
+                        },
+                    )
+                }
 
-            entry<UserDetail> { key ->
-                val viewModel = hiltViewModel<UserDetailViewModel, UserDetailViewModel.Factory>(
-                    creationCallback = { factory -> factory.create(key.userId) }
-                )
-                UserDetailScreen(viewModel = viewModel)
-            }
-        }
+                entry<UserDetail> { key ->
+                    val viewModel =
+                        hiltViewModel<UserDetailViewModel, UserDetailViewModel.Factory>(
+                            creationCallback = { factory -> factory.create(key.userId) },
+                        )
+                    UserDetailScreen(viewModel = viewModel)
+                }
+            },
     )
-
 }

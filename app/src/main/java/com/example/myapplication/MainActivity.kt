@@ -18,7 +18,6 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
     @Inject
     lateinit var repository: PreferencesRepository
 
@@ -32,14 +31,11 @@ class MainActivity : ComponentActivity() {
             MyApplicationTheme(darkTheme = isDarkMode) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
                     AppNavigation(repository)
                 }
             }
         }
-
-
     }
-
 }

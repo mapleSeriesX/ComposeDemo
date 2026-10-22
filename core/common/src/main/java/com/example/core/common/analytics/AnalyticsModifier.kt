@@ -10,11 +10,12 @@ import androidx.compose.ui.composed
 fun Modifier.trackClick(
     eventName: String,
     params: Map<String, Any> = emptyMap(),
-    onClick: () -> Unit
-): Modifier = composed {
-    val analyticsHelper = LocalAnalyticsHelper.current
-    this.clickable {
-        analyticsHelper.logEvent(eventName, params)
-        onClick()
+    onClick: () -> Unit,
+): Modifier =
+    composed {
+        val analyticsHelper = LocalAnalyticsHelper.current
+        this.clickable {
+            analyticsHelper.logEvent(eventName, params)
+            onClick()
+        }
     }
-}

@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.core.DataStoreFactory
 import androidx.datastore.dataStoreFile
-import com.example.data.preferences.PreferencesSerializer
+import com.example.data.preferences.UserPreferencesSerializer
 import com.example.data.preferences.proto.UserPreferences
 import dagger.Module
 import dagger.Provides
@@ -19,17 +19,16 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object DataStoreModule {
-
     private const val USER_PREFS_FILE = "user_prefs.pb"
 
     @Provides
     @Singleton
     fun provideUserPreferencesDataStore(
-        @ApplicationContext context: Context
+        @ApplicationContext context: Context,
     ): DataStore<UserPreferences> =
         DataStoreFactory.create(
-            serializer = PreferencesSerializer,
+            serializer = UserPreferencesSerializer,
             scope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
-            produceFile = { context.dataStoreFile(USER_PREFS_FILE) }
+            produceFile = { context.dataStoreFile(USER_PREFS_FILE) },
         )
 }

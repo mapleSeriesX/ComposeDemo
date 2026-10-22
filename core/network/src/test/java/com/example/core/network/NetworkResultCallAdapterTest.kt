@@ -8,7 +8,6 @@ import org.junit.Test
 import java.io.IOException
 
 class NetworkResultCallAdapterTest {
-
     @Test
     fun `NetworkResult Success map transforms data correctly`() {
         val result: NetworkResult<Int> = NetworkResult.Success(10)
@@ -33,16 +32,17 @@ class NetworkResultCallAdapterTest {
     }
 
     @Test
-    fun `NetworkResult Exception onFailure triggers callback`() = runBlocking {
-        val exception = IOException("Connection reset")
-        val result: NetworkResult<String> = NetworkResult.Exception(exception)
+    fun `NetworkResult Exception onFailure triggers callback`() =
+        runBlocking {
+            val exception = IOException("Connection reset")
+            val result: NetworkResult<String> = NetworkResult.Exception(exception)
 
-        var errorMsg: String? = null
-        result.onFailure { code, message ->
-            assertEquals(-1, code)
-            errorMsg = message
+            var errorMsg: String? = null
+            result.onFailure { code, message ->
+                assertEquals(-1, code)
+                errorMsg = message
+            }
+
+            assertEquals("Connection reset", errorMsg)
         }
-
-        assertEquals("Connection reset", errorMsg)
-    }
 }

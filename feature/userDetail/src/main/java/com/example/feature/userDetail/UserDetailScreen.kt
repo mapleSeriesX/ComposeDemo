@@ -32,7 +32,7 @@ import com.example.core.model.User
 @Composable
 fun UserDetailScreen(
     viewModel: UserDetailViewModel,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -49,14 +49,15 @@ fun UserDetailScreen(
 
     Scaffold(
         modifier = modifier,
-        snackbarHost = { SnackbarHost(snackbarHostState) }
+        snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
         UserDetailContent(
             state = uiState,
             onIntent = viewModel::onIntent,
-            modifier = Modifier
-                .padding(padding)
-                .imePadding()
+            modifier =
+                Modifier
+                    .padding(padding)
+                    .imePadding(),
         )
     }
 }
@@ -65,7 +66,7 @@ fun UserDetailScreen(
 fun UserDetailContent(
     state: UserDetailUiState,
     onIntent: (UserDetailIntent) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     when {
         state.isLoading -> {
@@ -77,16 +78,16 @@ fun UserDetailContent(
             Column(
                 modifier = modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
                     text = state.errorMessage.asString(),
                     style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.error
+                    color = MaterialTheme.colorScheme.error,
                 )
                 Button(
                     onClick = { onIntent(UserDetailIntent.Retry) },
-                    modifier = Modifier.padding(top = 16.dp)
+                    modifier = Modifier.padding(top = 16.dp),
                 ) {
                     Text(stringResource(R.string.user_detail_retry))
                 }
@@ -94,23 +95,24 @@ fun UserDetailContent(
         }
         state.user != null -> {
             Column(
-                modifier = modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                modifier =
+                    modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 Text(
                     text = stringResource(R.string.user_detail_id, state.user.id),
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.titleMedium,
                 )
                 Text(
                     text = stringResource(R.string.user_detail_name, state.user.name),
-                    style = MaterialTheme.typography.bodyLarge
+                    style = MaterialTheme.typography.bodyLarge,
                 )
                 AsyncImage(
                     model = state.user.url,
                     contentDescription = stringResource(R.string.user_detail_avatar_desc),
-                    modifier = Modifier.size(120.dp)
+                    modifier = Modifier.size(120.dp),
                 )
             }
         }
@@ -122,10 +124,11 @@ fun UserDetailContent(
 private fun UserDetailContentPreview() {
     MaterialTheme {
         UserDetailContent(
-            state = UserDetailUiState(
-                user = User("1001", "Alice", "https://example.com/avatar.png")
-            ),
-            onIntent = {}
+            state =
+                UserDetailUiState(
+                    user = User("1001", "Alice", "https://example.com/avatar.png"),
+                ),
+            onIntent = {},
         )
     }
 }
@@ -135,10 +138,11 @@ private fun UserDetailContentPreview() {
 private fun UserDetailContentErrorPreview() {
     MaterialTheme {
         UserDetailContent(
-            state = UserDetailUiState(
-                errorMessage = UiText.StringResource(R.string.user_detail_load_failed_default)
-            ),
-            onIntent = {}
+            state =
+                UserDetailUiState(
+                    errorMessage = UiText.StringResource(R.string.user_detail_load_failed_default),
+                ),
+            onIntent = {},
         )
     }
 }

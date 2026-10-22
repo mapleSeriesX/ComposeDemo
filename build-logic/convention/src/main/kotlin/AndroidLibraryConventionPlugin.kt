@@ -1,7 +1,8 @@
 import com.android.build.api.dsl.LibraryExtension
+import com.example.myapplication.configureDetekt
 import com.example.myapplication.configureFlavors
 import com.example.myapplication.configureKotlinAndroid
-import com.example.myapplication.configureSpotless
+import com.example.myapplication.configureKtlint
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
@@ -26,7 +27,8 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
                     }
                 }
             }
-            configureSpotless()
+            configureDetekt()
+            configureKtlint()
         }
     }
 }

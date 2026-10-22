@@ -9,5 +9,5 @@ data class AbTestExperiment(
     val key: String,
     val variantName: String,
     val isEnabled: Boolean = true,
-    val payload: Map<String, String> = emptyMap()
+    val payload: Map<String, String> = emptyMap(),
 )
