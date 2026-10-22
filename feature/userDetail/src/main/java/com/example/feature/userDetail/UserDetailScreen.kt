@@ -61,6 +61,10 @@ fun UserDetailScreen(
         )
     }
 }
+@Composable
+fun user(){
+
+}
 
 @Composable
 fun UserDetailContent(
