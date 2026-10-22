@@ -19,16 +19,6 @@ internal fun Project.configureKotlinAndroid(
             sourceCompatibility = JavaVersion.VERSION_17
             targetCompatibility = JavaVersion.VERSION_17
         }
-        lint {
-            abortOnError = true
-            warningsAsErrors = false
-            checkDependencies = true
-            disable += listOf(
-                "AndroidGradlePluginVersion",
-                "NewerVersionAvailable",
-                "GradleDependency"
-            )
-        }
     }
     configureKotlinCompiler()
 }
@@ -45,16 +35,6 @@ internal fun Project.configureKotlinAndroid(
         compileOptions {
             sourceCompatibility = JavaVersion.VERSION_17
             targetCompatibility = JavaVersion.VERSION_17
-        }
-        lint {
-            abortOnError = true
-            warningsAsErrors = false
-            checkDependencies = true
-            disable += listOf(
-                "AndroidGradlePluginVersion",
-                "NewerVersionAvailable",
-                "GradleDependency"
-            )
         }
     }
     configureKotlinCompiler()
