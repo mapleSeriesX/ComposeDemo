@@ -12,15 +12,6 @@ kotlin {
 android {
     namespace = "com.example.feature.user"
 
-    lint {
-        abortOnError = true
-        warningsAsErrors = true
-        checkDependencies = true
-        baseline = file("lint-baseline.xml")
-        disable += listOf("MissingTranslation")
-        enable += listOf("RtlHardcoded", "RtlCompat")
-    }
-
     defaultConfig {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

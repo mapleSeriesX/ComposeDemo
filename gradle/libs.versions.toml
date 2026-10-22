@@ -21,7 +21,6 @@ hiltLifecycleViewModelCompose = "1.4.0"
 kotlinxSerialization = "1.11.0"
 navigationCompose = "2.10.2"
 navigation3 = "1.0.0-alpha06"
-navigation3Runtime = "1.2.0"
 lifecycleViewmodelNavigation3 = "2.10.0" # 请使用最新稳定版
 coil = "3.0.4" # 请使用最新版本
 room = "2.8.5"
@@ -109,7 +108,6 @@ okhttp-logging-interceptor = { group = "com.squareup.okhttp3", name = "logging-i
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
 hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
-navigation3-runtime = { group = "androidx.navigation3", name = "navigation3-runtime", version.ref = "navigation3Runtime" }
 androidx-lifecycle-viewmodel-navigation3 = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-navigation3", version.ref = "lifecycleViewmodelNavigation3" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }

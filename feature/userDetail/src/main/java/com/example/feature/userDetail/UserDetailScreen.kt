@@ -60,11 +60,17 @@ fun UserDetailScreen(
                     .imePadding(),
         )
         user()
+        dser()
     }
 }
 
 @Composable
 fun user() {
+    Text(stringResource(R.string.user_detail_retry))
+}
+
+@Composable
+fun dser() {
     Text(stringResource(R.string.user_detail_retry))
 }
 
