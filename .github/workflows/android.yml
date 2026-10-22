@@ -6,9 +6,14 @@ on:
   pull_request:
     branches: [ "main" ]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
       - name: Checkout Code
@@ -34,3 +39,9 @@ jobs:
 
       - name: Build Multi-Flavor Debug APKs
         run: ./gradlew :app:assembleDevDebug --stacktrace
+
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-dev-debug
+          path: app/build/outputs/apk/dev/debug/*.apk
