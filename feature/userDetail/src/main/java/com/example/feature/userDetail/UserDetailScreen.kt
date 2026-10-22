@@ -59,13 +59,7 @@ fun UserDetailScreen(
                     .padding(padding)
                     .imePadding(),
         )
-        User()
     }
-}
-
-@Composable
-fun User() {
-    Text(stringResource(R.string.user_detail_retry))
 }
 
 @Composable
@@ -80,6 +74,7 @@ fun UserDetailContent(
                 CircularProgressIndicator()
             }
         }
+
         state.errorMessage != null -> {
             Column(
                 modifier = modifier.fillMaxSize(),
@@ -99,6 +94,7 @@ fun UserDetailContent(
                 }
             }
         }
+
         state.user != null -> {
             Column(
                 modifier =
