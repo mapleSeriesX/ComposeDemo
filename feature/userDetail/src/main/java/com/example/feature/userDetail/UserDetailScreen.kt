@@ -59,12 +59,12 @@ fun UserDetailScreen(
                     .padding(padding)
                     .imePadding(),
         )
-        User()
+        user()
     }
 }
 
 @Composable
-fun User() {
+fun user() {
     Text(stringResource(R.string.user_detail_retry))
 }
 
