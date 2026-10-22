@@ -11,6 +11,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.kotlinx.coroutines.core)
     implementation(libs.androidx.benchmark.macro.junit4)
     implementation(libs.androidx.uiautomator)
     implementation(libs.androidx.junit)

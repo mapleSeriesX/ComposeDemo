@@ -29,13 +29,13 @@ sealed interface NetworkResult<out T> {
     }
 }
 
-inline fun <T> NetworkResult<T>.getOrNull(): T? =
+fun <T> NetworkResult<T>.getOrNull(): T? =
     when (this) {
         is NetworkResult.Success -> data
         else -> null
     }
 
-inline fun <T> NetworkResult<T>.getOrDefault(defaultValue: T): T =
+fun <T> NetworkResult<T>.getOrDefault(defaultValue: T): T =
     when (this) {
         is NetworkResult.Success -> data
         else -> defaultValue
