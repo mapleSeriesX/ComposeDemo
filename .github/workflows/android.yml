@@ -2,16 +2,26 @@ name: Android CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ main, develop ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ main, develop ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build:
+  # ============================================================
+  # 阶段一：快速质量门禁 (PR 和 push 时均运行)
+  # 目标：在 3-5 分钟内提供核心反馈
+  # ============================================================
+  quick-check:
+    name: Quick Quality Gate
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
-      - name: Checkout Code
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Set up JDK 17
@@ -20,17 +30,37 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      # 关键性能优化：自动处理 Gradle 缓存
+      # PR 中只读缓存，避免污染主分支缓存
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
 
-      - name: Run Spotless Code Format Check
-        run: ./gradlew spotlessCheck --stacktrace
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
 
-      - name: Run Detekt Static Code Analysis
-        run: ./gradlew detekt --stacktrace
+      # 静态分析 (Detekt + Ktlint)
+      - name: Run Detekt
+        run: ./gradlew detekt
 
-      - name: Run Unit Tests & Jacoco Coverage
-        run: ./gradlew testDevDebugUnitTest --stacktrace
+      - name: Run Ktlint
+        run: ./gradlew ktlintCheck
 
-      - name: Build Multi-Flavor Debug APKs
-        run: ./gradlew :app:assembleDevDebug --stacktrace
+      # 针对产品风味的精确单元测试 (以 dev 风味为例，速度最快)
+      - name: Run dev debug unit tests
+        run: ./gradlew testDevDebugUnitTest
+
+      # 编译 Debug 变体，验证编译通过
+      - name: Assemble dev debug APK
+        run: ./gradlew assembleDevDebug
+
+      # 失败时上传测试报告，方便排查
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-quick
+          path: |
+            **/build/test-results/
+            **/build/reports/
