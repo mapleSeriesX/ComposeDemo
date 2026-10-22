@@ -1,0 +1,32 @@
+# R8 / ProGuard Keep Rules for Production Builds
+
+# Retrofit
+-keepattributes Signature, InnerClasses, EnclosingMethod
+-keepattributes RuntimeVisibleAnnotations, RuntimeVisibleParameterAnnotations
+-keepclassmembers,allowobfuscation interface * {
+    @retrofit2.http.* <methods>;
+}
+
+# kotlinx.serialization
+-keepattributes *Annotation*, ElementValuePairs
+-keepclassmembers class * {
+    *** Companion;
+}
+-keepclasseswithmembers class * {
+    kotlinx.serialization.KSerializer serializer(...);
+}
+-keepclassmembers class * {
+    @kotlinx.serialization.Serializable <fields>;
+}
+
+# Room Database
+-keep class * extends androidx.room.RoomDatabase
+-dontwarn androidx.room.paging.**
+
+# Protocol Buffers / DataStore
+-keep class * extends com.google.protobuf.GeneratedMessageLite { *; }
+
+# Hilt / Dagger
+-keepclassmembers,allowobfuscation class * {
+    @dagger.hilt.android.lifecycle.HiltViewModel <init>(...);
+}

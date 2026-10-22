@@ -1,0 +1,8 @@
+<resources>
+    <string name="user_detail_retry">重试</string>
+    <string name="user_detail_id">ID: %1$s</string>
+    <string name="user_detail_name">Name: %1$s</string>
+    <string name="user_detail_avatar_desc">用户头像</string>
+    <string name="user_detail_load_failed">加载失败：%1$s</string>
+    <string name="user_detail_load_failed_default">加载失败，请重试</string>
+</resources>

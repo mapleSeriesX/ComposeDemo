@@ -1,0 +1,8 @@
+# Retrofit & kotlinx.serialization Consumer Keep Rules
+-keepattributes Signature, InnerClasses, EnclosingMethod
+-keepclassmembers,allowobfuscation interface * {
+    @retrofit2.http.* <methods>;
+}
+-keepclassmembers class * {
+    @kotlinx.serialization.Serializable <fields>;
+}

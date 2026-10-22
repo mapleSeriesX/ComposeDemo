@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+option java_package = "com.example.data.preferences.proto";
+option java_multiple_files = true;
+
+message UserPreferences {
+  string username = 1;
+  bool isDarkMode = 2;
+  int32 launchCount = 3;
+}

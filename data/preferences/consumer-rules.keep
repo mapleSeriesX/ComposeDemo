@@ -1,0 +1,2 @@
+# Protobuf Lite Consumer Keep Rules
+-keep class * extends com.google.protobuf.GeneratedMessageLite { *; }

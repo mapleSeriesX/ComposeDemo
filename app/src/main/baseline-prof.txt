@@ -1,0 +1,9 @@
+HSPLcom/example/myapplication/MainActivity;->onCreate(Landroid/os/Bundle;)V
+HSPLcom/example/myapplication/AppNavigationKt;->AppNavigation(Lcom/example/data/preferences/PreferencesRepository;)V
+HSPLcom/example/feature/user/UserScreenKt;->UserScreen(Lcom/example/feature/user/UserViewModel;Lkotlin/jvm/functions/Function1;)V
+HSPLcom/example/feature/user/UserScreenKt;->UserContent(Lcom/example/feature/user/UserUiState;Lkotlin/jvm/functions/Function1;Landroidx/compose/ui/Modifier;)V
+HSPLcom/example/feature/userDetail/UserDetailScreenKt;->UserDetailScreen(Lcom/example/feature/userDetail/UserDetailViewModel;Landroidx/compose/ui/Modifier;)V
+HSPLandroidx/compose/ui/platform/ComposeView;-><init>(Landroid/content/Context;)V
+HSPLandroidx/compose/runtime/ComposerImpl;->startGroup(I)V
+HSPLandroidx/navigation3/ui/NavDisplayKt;->NavDisplay(Ljava/util/List;Lkotlin/jvm/functions/Function0;Ljava/util/List;Lkotlin/jvm/functions/Function1;)V
+HSPLandroidx/room/RoomDatabase;-><init>()V

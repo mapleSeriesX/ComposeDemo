@@ -1,0 +1,2 @@
+# Room Consumer Keep Rules
+-keep class * extends androidx.room.RoomDatabase

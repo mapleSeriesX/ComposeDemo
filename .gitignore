@@ -1,0 +1,34 @@
+# 所有模块 build
+**/build/
+
+# IDE
+**/.idea/
+*.iml
+
+# Gradle
+**/.gradle/
+**/local.properties
+
+# Native / Android Studio 生成
+**/.cxx/
+**/.externalNativeBuild/
+**/captures/
+
+# Kotlin 生成
+**/.kotlin/
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 日志 / 内存转储
+*.log
+*.hprof
+
+# 签名和敏感文件
+*.jks
+*.keystore
+secrets.properties
+
+# 如果只有 app 模块有自定义 release 输出，保留这个
+/app/release/
