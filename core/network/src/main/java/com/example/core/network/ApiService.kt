@@ -9,5 +9,7 @@ interface ApiService {
     suspend fun getUsers(): NetworkResult<List<User>>
 
     @GET("user")
-    suspend fun getUser(@Query("id") id: String): NetworkResult<User>
+    suspend fun getUser(
+        @Query("id") id: String,
+    ): NetworkResult<User>
 }

@@ -10,19 +10,18 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flowOf
 
 class FakeUserRepository : UserRepository {
-
-    private val _users = MutableStateFlow<List<User>>(emptyList())
+    private val usersFlow = MutableStateFlow<List<User>>(emptyList())
 
     var shouldReturnError = false
     var errorMsg = "网络断开"
 
     fun setCachedUsers(users: List<User>) {
-        _users.value = users
+        usersFlow.value = users
     }
 
-    override fun observeUsers(): Flow<List<User>> = _users.asStateFlow()
+    override fun observeUsers(): Flow<List<User>> = usersFlow.asStateFlow()
 
-    override fun observeUsersPaged(): Flow<PagingData<User>> = flowOf(PagingData.from(_users.value))
+    override fun observeUsersPaged(): Flow<PagingData<User>> = flowOf(PagingData.from(usersFlow.value))
 
     override suspend fun refreshUsers(): Result<Unit> {
         delay(10)
@@ -34,5 +33,6 @@ class FakeUserRepository : UserRepository {
     }
 
     override fun observeUser(id: String): Flow<User?> = MutableStateFlow(null)
+
     override suspend fun refreshUser(id: String): Result<Unit> = Result.success(Unit)
 }

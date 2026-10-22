@@ -12,27 +12,28 @@ import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
-import com.example.core.network.BuildConfig
 
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
     @Provides
     @Singleton
-    fun provideJson(): Json = Json {
-        ignoreUnknownKeys = true
-        coerceInputValues = true
-    }
+    fun provideJson(): Json =
+        Json {
+            ignoreUnknownKeys = true
+            coerceInputValues = true
+        }
 
     @Provides
     @Singleton
     fun provideLoggingInterceptor(): HttpLoggingInterceptor =
         HttpLoggingInterceptor().apply {
-            level = if (BuildConfig.DEBUG) {
-                HttpLoggingInterceptor.Level.BODY
-            } else {
-                HttpLoggingInterceptor.Level.NONE
-            }
+            level =
+                if (BuildConfig.DEBUG) {
+                    HttpLoggingInterceptor.Level.BODY
+                } else {
+                    HttpLoggingInterceptor.Level.NONE
+                }
         }
 
     @Provides
@@ -41,7 +42,7 @@ object NetworkModule {
         loggingInterceptor: HttpLoggingInterceptor,
         errorInterceptor: ErrorInterceptor,
         metricsEventListener: MetricsOkHttpEventListener,
-        config: NetworkConfig
+        config: NetworkConfig,
     ): OkHttpClient =
         OkHttpClient.Builder()
             .eventListener(metricsEventListener)
@@ -57,19 +58,18 @@ object NetworkModule {
     fun provideRetrofit(
         okHttpClient: OkHttpClient,
         json: Json,
-        config: NetworkConfig
+        config: NetworkConfig,
     ): Retrofit =
         Retrofit.Builder()
             .baseUrl(config.baseUrl)
             .client(okHttpClient)
             .addCallAdapterFactory(NetworkResultCallAdapterFactory.create())
             .addConverterFactory(
-                json.asConverterFactory("application/json".toMediaType())
+                json.asConverterFactory("application/json".toMediaType()),
             )
             .build()
 
     @Provides
     @Singleton
-    fun provideApiService(retrofit: Retrofit): ApiService =
-        retrofit.create(ApiService::class.java)
+    fun provideApiService(retrofit: Retrofit): ApiService = retrofit.create(ApiService::class.java)
 }

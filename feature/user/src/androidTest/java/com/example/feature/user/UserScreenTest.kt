@@ -10,21 +10,21 @@ import org.junit.Rule
 import org.junit.Test
 
 class UserScreenTest {
-
     @get:Rule
     val composeTestRule = createComposeRule()
 
     @Test
     fun userContent_showsUserList() {
-        val users = persistentListOf(
-            User(id = "1", name = "Alice", url = "url1"),
-            User(id = "2", name = "Bob", url = "url2")
-        )
+        val users =
+            persistentListOf(
+                User(id = "1", name = "Alice", url = "url1"),
+                User(id = "2", name = "Bob", url = "url2"),
+            )
 
         composeTestRule.setContent {
             UserContent(
                 state = UserUiState(users = users),
-                onIntent = {}
+                onIntent = {},
             )
         }
 
@@ -37,7 +37,7 @@ class UserScreenTest {
         composeTestRule.setContent {
             UserContent(
                 state = UserUiState(errorMessage = UiText.DynamicString("网络出现故障")),
-                onIntent = {}
+                onIntent = {},
             )
         }
 

@@ -9,12 +9,13 @@ import com.example.core.model.User
 data class UserDetailUiState(
     val isLoading: Boolean = false,
     val user: User? = null,
-    val errorMessage: UiText? = null
+    val errorMessage: UiText? = null,
 )
 
 // Intent：用户操作
 sealed interface UserDetailIntent {
     data object LoadUser : UserDetailIntent
+
     data object Retry : UserDetailIntent
 }
 

@@ -11,9 +11,8 @@ import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 
 class NetworkResultCallAdapter<R>(
-    private val successType: Type
+    private val successType: Type,
 ) : CallAdapter<R, Call<NetworkResult<R>>> {
-
     override fun responseType(): Type = successType
 
     override fun adapt(call: Call<R>): Call<NetworkResult<R>> {
@@ -22,45 +21,52 @@ class NetworkResultCallAdapter<R>(
 }
 
 private class NetworkResultCall<R>(
-    private val delegate: Call<R>
+    private val delegate: Call<R>,
 ) : Call<NetworkResult<R>> {
-
     override fun enqueue(callback: Callback<NetworkResult<R>>) {
-        delegate.enqueue(object : Callback<R> {
-            override fun onResponse(call: Call<R>, response: Response<R>) {
-                val body = response.body()
-                val code = response.code()
-                val errorBody = response.errorBody()
+        delegate.enqueue(
+            object : Callback<R> {
+                override fun onResponse(
+                    call: Call<R>,
+                    response: Response<R>,
+                ) {
+                    val body = response.body()
+                    val code = response.code()
+                    val errorBody = response.errorBody()
 
-                if (response.isSuccessful) {
-                    if (body != null) {
-                        callback.onResponse(
-                            this@NetworkResultCall,
-                            Response.success(NetworkResult.Success(body))
-                        )
+                    if (response.isSuccessful) {
+                        if (body != null) {
+                            callback.onResponse(
+                                this@NetworkResultCall,
+                                Response.success(NetworkResult.Success(body)),
+                            )
+                        } else {
+                            // 2xx 但无响应体
+                            callback.onResponse(
+                                this@NetworkResultCall,
+                                Response.success(NetworkResult.Error(code, "Response body is null")),
+                            )
+                        }
                     } else {
-                        // 2xx 但无响应体
+                        val msg = errorBody?.string() ?: response.message()
                         callback.onResponse(
                             this@NetworkResultCall,
-                            Response.success(NetworkResult.Error(code, "Response body is null"))
+                            Response.success(NetworkResult.Error(code, msg)),
                         )
                     }
-                } else {
-                    val msg = errorBody?.string() ?: response.message()
+                }
+
+                override fun onFailure(
+                    call: Call<R>,
+                    t: Throwable,
+                ) {
                     callback.onResponse(
                         this@NetworkResultCall,
-                        Response.success(NetworkResult.Error(code, msg))
+                        Response.success(NetworkResult.Exception(t)),
                     )
                 }
-            }
-
-            override fun onFailure(call: Call<R>, t: Throwable) {
-                callback.onResponse(
-                    this@NetworkResultCall,
-                    Response.success(NetworkResult.Exception(t))
-                )
-            }
-        })
+            },
+        )
     }
 
     override fun clone(): Call<NetworkResult<R>> = NetworkResultCall(delegate.clone())
@@ -81,11 +87,11 @@ private class NetworkResultCall<R>(
 }
 
 class NetworkResultCallAdapterFactory private constructor() : CallAdapter.Factory() {
-
+    @Suppress("ReturnCount")
     override fun get(
         returnType: Type,
         annotations: Array<out Annotation>,
-        retrofit: Retrofit
+        retrofit: Retrofit,
     ): CallAdapter<*, *>? {
         if (getRawType(returnType) != Call::class.java) {
             return null

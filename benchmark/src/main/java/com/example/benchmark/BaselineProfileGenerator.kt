@@ -8,15 +8,15 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class BaselineProfileGenerator {
-
     @get:Rule
     val baselineProfileRule = BaselineProfileRule()
 
     @Test
-    fun generateBaselineProfile() = baselineProfileRule.collect(
-        packageName = "com.example.myapplication.dev"
-    ) {
-        pressHome()
-        startActivityAndWait()
-    }
+    fun generateBaselineProfile() =
+        baselineProfileRule.collect(
+            packageName = "com.example.myapplication.dev",
+        ) {
+            pressHome()
+            startActivityAndWait()
+        }
 }

@@ -2,16 +2,32 @@ name: Android CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ main, develop ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
-  build:
+  # ============================================================
+  # 阶段一：快速质量门禁 (PR 和 push 均运行)
+  # 目标：3-5 分钟提供核心反馈
+  #./gradlew ktlintFormat
+  #./gradlew detekt ktlintCheck lintDevDebug testDevDebugUnitTest assembleDevDebug --parallel --stacktrace
+  # ============================================================
+  quick-check:
+    name: Quick Quality Gate
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
-      - name: Checkout Code
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Set up JDK 17
@@ -20,17 +36,32 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      # PR 中只读缓存，避免污染主分支缓存
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
 
-      - name: Run Spotless Code Format Check
-        run: ./gradlew spotlessCheck --stacktrace
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
 
-      - name: Run Detekt Static Code Analysis
-        run: ./gradlew detekt --stacktrace
+      # 静态分析 + Lint + 单测 + 编译，合并为一次 Gradle 调用
+      - name: Static analysis, lint, unit tests & assemble
+        run: >
+          ./gradlew detekt ktlintCheck lintDevDebug
+          testDevDebugUnitTest assembleDevDebug
+          --parallel --stacktrace
 
-      - name: Run Unit Tests & Jacoco Coverage
-        run: ./gradlew testDevDebugUnitTest --stacktrace
-
-      - name: Build Multi-Flavor Debug APKs
-        run: ./gradlew :app:assembleDevDebug --stacktrace
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quick-check-reports
+          path: |
+            **/build/test-results/**
+            **/build/reports/tests/**
+            **/build/reports/detekt/**
+            **/build/reports/ktlint/**
+            **/build/reports/lint-results-*.html
+          retention-days: 7
+          if-no-files-found: ignore
