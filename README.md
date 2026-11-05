@@ -23,33 +23,32 @@
 
 ```mermaid
 graph TD
-    subgraph App Host Layer [宿主层]
+    subgraph AppHostLayer["宿主层"]
         APP[":app (Navigation 3, Adaptive UI, App Entry)"]
     end
 
-    subgraph Feature Layer [业务功能层 (MVI范式)]
+    subgraph FeatureLayer["业务功能层 (MVI范式)"]
         FEAT_RECOG[":feature:recognition (CameraX + ML Kit)"]
         FEAT_USER[":feature:user (History List)"]
         FEAT_DETAIL[":feature:userDetail (AssistedInject Detail)"]
     end
 
-    subgraph Data Layer [数据仓储层 (Repository Pattern)]
+    subgraph DataLayer["数据仓储层 (Repository Pattern)"]
         DATA_USER[":data:user (UserRepo, RemoteMediator)"]
         DATA_PREF[":data:preferences (Proto DataStore, AB Test)"]
     end
 
-    subgraph Core Infrastructure Layer [核心基础层]
+    subgraph CoreInfrastructureLayer["核心基础层"]
         CORE_MODEL[":core:model (Domain Models)"]
         CORE_NET[":core:network (Retrofit, OkHttp APM, CallAdapter)"]
         CORE_DB[":core:database (Room Database, UserDao)"]
         CORE_COMMON[":core:common (AppLogger, Analytics, NetworkMonitor)"]
     end
 
-    subgraph Build Logic [复合构建逻辑]
+    subgraph BuildLogic["复合构建逻辑"]
         BUILD_LOGIC[":build-logic:convention (Convention Plugins)"]
     end
 
-    %% Dependencies
     APP --> FEAT_RECOG
     APP --> FEAT_USER
     APP --> FEAT_DETAIL
