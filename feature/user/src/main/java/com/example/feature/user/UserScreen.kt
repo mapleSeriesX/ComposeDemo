@@ -1,14 +1,13 @@
 package com.example.feature.user
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
@@ -25,16 +24,19 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil3.compose.AsyncImage
 import com.example.core.common.analytics.trackClick
 import com.example.core.common.util.UiText
 import com.example.core.model.User
 import kotlinx.collections.immutable.persistentListOf
+import java.io.File
 
 @Composable
 fun UserScreen(
@@ -98,49 +100,74 @@ fun UserContent(
             }
         }
 
-        state.errorMessage != null -> {
-            Column(
+        state.users.isEmpty() -> {
+            Box(
                 modifier = modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
+                contentAlignment = Alignment.Center,
             ) {
                 Text(
-                    text = state.errorMessage.asString(),
+                    text = "暂无识别历史记录，去“识别”页面拍照保存吧！",
                     style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.error,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                Button(
-                    onClick = { onIntent(UserIntent.Refresh) },
-                    modifier = Modifier.padding(top = 16.dp),
-                ) {
-                    Text(stringResource(R.string.user_retry))
-                }
             }
         }
 
         else -> {
             LazyColumn(modifier = modifier.fillMaxSize()) {
                 items(state.users, key = { it.id }) { user ->
-                    ListItem(
-                        headlineContent = {
-                            Text(
-                                text = user.name,
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onSurface,
-                            )
-                        },
-                        modifier =
-                            Modifier.trackClick(
-                                eventName = "user_item_click",
-                                params = mapOf("user_id" to user.id),
-                            ) {
-                                onIntent(UserIntent.OnUserClick(user.id))
-                            },
+                    UserItem(
+                        user = user,
+                        onUserClick = { userId -> onIntent(UserIntent.OnUserClick(userId)) },
                     )
                 }
             }
         }
     }
+}
+
+@Composable
+private fun UserItem(
+    user: User,
+    onUserClick: (String) -> Unit,
+) {
+    val imageModel =
+        remember(user.url) {
+            if (user.url.startsWith("/")) {
+                File(user.url)
+            } else {
+                user.url
+            }
+        }
+    ListItem(
+        leadingContent = {
+            if (user.url.isNotBlank()) {
+                AsyncImage(
+                    model = imageModel,
+                    contentDescription = user.name,
+                    contentScale = ContentScale.Crop,
+                    modifier =
+                        Modifier
+                            .size(56.dp)
+                            .clip(RoundedCornerShape(8.dp)),
+                )
+            }
+        },
+        headlineContent = {
+            Text(
+                text = user.name,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+        },
+        modifier =
+            Modifier.trackClick(
+                eventName = "user_item_click",
+                params = mapOf("user_id" to user.id),
+            ) {
+                onUserClick(user.id)
+            },
+    )
 }
 
 @Preview(showBackground = true)

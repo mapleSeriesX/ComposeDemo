@@ -68,4 +68,15 @@ class UserRepositoryImpl
                     Result.failure(result.throwable)
                 }
             }
+
+        @Suppress("TooGenericExceptionCaught")
+        override suspend fun saveRecord(user: User): Result<Unit> =
+            try {
+                userDao.insertUser(user.toEntity())
+                Result.success(Unit)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Result.failure(e)
+            }
     }

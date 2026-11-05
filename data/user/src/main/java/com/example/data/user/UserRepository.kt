@@ -14,4 +14,6 @@ interface UserRepository {
     fun observeUser(id: String): Flow<User?>
 
     suspend fun refreshUser(id: String): Result<Unit>
+
+    suspend fun saveRecord(user: User): Result<Unit>
 }

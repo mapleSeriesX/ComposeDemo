@@ -1,9 +1,13 @@
+import jdk.internal.jshell.debug.InternalDebugControl.release
+import java.lang.module.ModuleFinder.compose
+
 plugins {
     alias(libs.plugins.myapplication.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
     alias(libs.plugins.kotlin.parcelize)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -47,7 +51,10 @@ dependencies {
     implementation(project(":data:preferences"))
     implementation(project(":feature:user"))
     implementation(project(":feature:userDetail"))
+    implementation(project(":feature:recognition"))
 
+    implementation(libs.compose.material.icons.extended)
+    implementation(libs.androidx.material3.adaptive.navigation.suite)
     implementation(libs.retrofit)
     implementation(libs.retrofit.kotlinx.serialization)
     implementation(libs.kotlinx.serialization.json)

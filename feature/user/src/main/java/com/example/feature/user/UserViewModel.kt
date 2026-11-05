@@ -29,7 +29,6 @@ class UserViewModel
     constructor(
         private val repository: UserRepository,
     ) : ViewModel() {
-        // ① Room 数据源：stateIn 直接热化，Eagerly 保证 loadUsers 能读到缓存
         private val users: StateFlow<ImmutableList<User>> =
             repository.observeUsers()
                 .map { it.toImmutableList() }
@@ -47,14 +46,13 @@ class UserViewModel
         private val isLoadingFlow = MutableStateFlow(false)
         private val errorMessageFlow = MutableStateFlow<UiText?>(null)
 
-        // ② UI 状态：combine 三个源，WhileSubscribed 控制 UI 层计算
         val uiState: StateFlow<UserUiState> =
             combine(
                 users,
                 isLoadingFlow,
                 errorMessageFlow,
-            ) { users, loading, error ->
-                UserUiState(users = users, isLoading = loading, errorMessage = error)
+            ) { usersList, loading, error ->
+                UserUiState(users = usersList, isLoading = loading, errorMessage = error)
             }.stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(5_000),
@@ -78,24 +76,18 @@ class UserViewModel
             viewModelScope.launch {
                 isLoadingFlow.value = true
                 errorMessageFlow.value = null
-                repository.refreshUsers().onFailure { e ->
-                    // users 是 Eagerly，这里读到的缓存一定准确
-                    if (users.value.isNotEmpty()) {
-                        errorMessageFlow.value = null
-                        _effect.send(
-                            UserEffect.ShowToast(UiText.StringResource(R.string.user_network_error_cache)),
-                        )
+                val result = repository.refreshUsers()
+                isLoadingFlow.value = false
+                result.onFailure { throwable ->
+                    if (users.value.isEmpty()) {
+                        errorMessageFlow.value = throwable.message?.let { UiText.DynamicString(it) }
+                            ?: UiText.StringResource(R.string.user_network_error_toast)
+                        _effect.send(UserEffect.ShowToast(UiText.StringResource(R.string.user_network_error_toast)))
                     } else {
-                        val errorUiText =
-                            e.message?.let { UiText.DynamicString(it) }
-                                ?: UiText.StringResource(R.string.user_load_failed)
-                        errorMessageFlow.value = errorUiText
-                        _effect.send(
-                            UserEffect.ShowToast(UiText.StringResource(R.string.user_network_error_toast)),
-                        )
+                        errorMessageFlow.value = null
+                        _effect.send(UserEffect.ShowToast(UiText.StringResource(R.string.user_network_error_cache)))
                     }
                 }
-                isLoadingFlow.value = false
             }
         }
     }
