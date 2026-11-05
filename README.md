@@ -1,4 +1,4 @@
-# ComposeDemo 现代 Android 架构复盘与技术文档
+# DishNote 现代 Android 架构复盘与技术文档
 
 [![Android Studio](https://img.shields.io/badge/Android%20Studio-Ladybug%20%7C%202024.2+-brightgreen.svg)](https://developer.android.com/studio)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.4.0-blue.svg)](https://kotlinlang.org/)
@@ -11,7 +11,7 @@
 
 **识菜笔记 App** 是一款基于端侧 AI 的图片记录应用。用户通过相机拍摄菜品，App 利用 ML Kit 实时识别出主菜、配菜、甜点、小吃等类别，并将识别结果与图片路径持久化存储，支持历史记录的高效浏览。项目重点验证了 Jetpack Compose 声明式 UI 与端侧机器学习的高效结合方案。
 
-**ComposeDemo** 是一个严格遵循 **Modern Android Development (MAD)** 规范的高标准、多模块 (Multi-Module) Android 示例项目。项目集成了 **Jetpack Compose**、**Navigation 3 声明式导航**、**MVI 单向数据流 (UDF)**、**Proto DataStore**、**Room + Retrofit 离线优先架构**，以及 **CameraX + Google ML Kit 视觉智能识别**。
+**DishNote** 是一个严格遵循 **Modern Android Development (MAD)** 规范的高标准、多模块 (Multi-Module) Android 示例项目。项目集成了 **Jetpack Compose**、**Navigation 3 声明式导航**、**MVI 单向数据流 (UDF)**、**Proto DataStore**、**Room + Retrofit 离线优先架构**，以及 **CameraX + Google ML Kit 视觉智能识别**。
 
 本文档是对该项目整体架构设计、技术选型、模块化拆分、数据流向以及性能优化的完整复盘。
 
@@ -232,4 +232,4 @@ flowchart LR
 
 ## 🎯 总结与展望
 
-ComposeDemo 项目展现了 **Modern Android Development** 范式下的工程化最高标准。通过将应用拆分为粒度合理的模块，配合统一的 `build-logic` 约定插件，大大降低了业务逻辑耦合度与后期维护成本。结合 Jetpack Navigation 3 与 Compose MVI 架构，项目不仅在性能、可测试性上达到了极佳标准，也为复杂商业 Android 应用开发提供了坚实的架构范本。
+DishNote 项目展现了 **Modern Android Development** 范式下的工程化最高标准。通过将应用拆分为粒度合理的模块，配合统一的 `build-logic` 约定插件，大大降低了业务逻辑耦合度与后期维护成本。结合 Jetpack Navigation 3 与 Compose MVI 架构，项目不仅在性能、可测试性上达到了极佳标准，也为复杂商业 Android 应用开发提供了坚实的架构范本。

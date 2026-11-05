@@ -74,9 +74,20 @@ class UserViewModel
 
         private fun loadUsers() {
             viewModelScope.launch {
-                isLoadingFlow.value = false
+                isLoadingFlow.value = true
                 errorMessageFlow.value = null
-                repository.refreshUsers()
+                val result = repository.refreshUsers()
+                isLoadingFlow.value = false
+                result.onFailure { throwable ->
+                    if (users.value.isEmpty()) {
+                        errorMessageFlow.value = throwable.message?.let { UiText.DynamicString(it) }
+                            ?: UiText.StringResource(R.string.user_network_error_toast)
+                        _effect.send(UserEffect.ShowToast(UiText.StringResource(R.string.user_network_error_toast)))
+                    } else {
+                        errorMessageFlow.value = null
+                        _effect.send(UserEffect.ShowToast(UiText.StringResource(R.string.user_network_error_cache)))
+                    }
+                }
             }
         }
     }

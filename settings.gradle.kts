@@ -26,7 +26,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "ComposeDemo"
+rootProject.name = "DishNote"
 include(":app")
 include(":core:model")
 include(":core:network")

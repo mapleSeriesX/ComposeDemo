@@ -35,4 +35,6 @@ class FakeUserRepository : UserRepository {
     override fun observeUser(id: String): Flow<User?> = MutableStateFlow(null)
 
     override suspend fun refreshUser(id: String): Result<Unit> = Result.success(Unit)
+
+    override suspend fun saveRecord(user: User): Result<Unit> = Result.success(Unit)
 }

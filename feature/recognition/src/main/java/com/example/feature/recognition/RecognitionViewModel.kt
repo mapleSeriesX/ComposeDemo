@@ -28,8 +28,14 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
+import java.io.IOException
 import java.util.UUID
 import javax.inject.Inject
+
+private const val MAX_PER_OBJECT_LABEL_COUNT = 3
+private const val CLASSIFICATION_CONFIDENCE_THRESHOLD = 0.3f
+private const val PERCENTAGE_MULTIPLIER = 100
+private const val JPEG_COMPRESSION_QUALITY = 90
 
 @HiltViewModel
 class RecognitionViewModel
@@ -38,7 +44,6 @@ class RecognitionViewModel
         private val repository: UserRepository,
         @ApplicationContext private val context: Context,
     ) : ViewModel() {
-
         private val _uiState = MutableStateFlow(RecognitionUiState())
         val uiState: StateFlow<RecognitionUiState> = _uiState.asStateFlow()
 
@@ -55,47 +60,56 @@ class RecognitionViewModel
             }
         }
 
+        @Suppress("SwallowedException")
         private fun createObjectDetector(context: Context): ObjectDetector {
             val assetFileName = "food.tflite"
-            val hasAssetModel = try {
-                context.assets.open(assetFileName).close()
-                true
-            } catch (e: Exception) {
-                false
-            }
+            val hasAssetModel =
+                try {
+                    context.assets.open(assetFileName).close()
+                    true
+                } catch (_: IOException) {
+                    false
+                }
 
             return if (hasAssetModel) {
-                val localModel = LocalModel.Builder()
-                    .setAssetFilePath(assetFileName)
-                    .build()
-                val customOptions = CustomObjectDetectorOptions.Builder(localModel)
-                    .setDetectorMode(CustomObjectDetectorOptions.SINGLE_IMAGE_MODE)
-                    .enableMultipleObjects()
-                    .enableClassification()
-                    .setMaxPerObjectLabelCount(3)
-                    .setClassificationConfidenceThreshold(0.3f)
-                    .build()
+                val localModel =
+                    LocalModel.Builder()
+                        .setAssetFilePath(assetFileName)
+                        .build()
+                val customOptions =
+                    CustomObjectDetectorOptions.Builder(localModel)
+                        .setDetectorMode(CustomObjectDetectorOptions.SINGLE_IMAGE_MODE)
+                        .enableMultipleObjects()
+                        .enableClassification()
+                        .setMaxPerObjectLabelCount(MAX_PER_OBJECT_LABEL_COUNT)
+                        .setClassificationConfidenceThreshold(CLASSIFICATION_CONFIDENCE_THRESHOLD)
+                        .build()
                 ObjectDetection.getClient(customOptions)
             } else {
-                val defaultOptions = ObjectDetectorOptions.Builder()
-                    .setDetectorMode(ObjectDetectorOptions.SINGLE_IMAGE_MODE)
-                    .enableMultipleObjects()
-                    .enableClassification()
-                    .build()
+                val defaultOptions =
+                    ObjectDetectorOptions.Builder()
+                        .setDetectorMode(ObjectDetectorOptions.SINGLE_IMAGE_MODE)
+                        .enableMultipleObjects()
+                        .enableClassification()
+                        .build()
                 ObjectDetection.getClient(defaultOptions)
             }
         }
 
-        private fun processImage(bitmap: Bitmap, rotationDegrees: Int) {
+        private fun processImage(
+            bitmap: Bitmap,
+            rotationDegrees: Int,
+        ) {
             viewModelScope.launch {
                 _uiState.update { it.copy(isRecognizing = true, errorMessage = null) }
 
-                val rotatedBitmap = if (rotationDegrees != 0) {
-                    val matrix = Matrix().apply { postRotate(rotationDegrees.toFloat()) }
-                    Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
-                } else {
-                    bitmap
-                }
+                val rotatedBitmap =
+                    if (rotationDegrees != 0) {
+                        val matrix = Matrix().apply { postRotate(rotationDegrees.toFloat()) }
+                        Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+                    } else {
+                        bitmap
+                    }
 
                 val inputImage = InputImage.fromBitmap(rotatedBitmap, 0)
 
@@ -116,28 +130,27 @@ class RecognitionViewModel
                             }
                         }
 
-
-                        if(bestConfidence==0f){
+                        if (bestConfidence == 0f) {
                             _uiState.update {
                                 it.copy(
                                     isRecognizing = false,
-                                    errorMessage = UiText.DynamicString( "识别失败"),
+                                    errorMessage = UiText.DynamicString("识别失败"),
                                 )
                             }
                             viewModelScope.launch {
                                 _effect.send(RecognitionEffect.ShowToast(UiText.DynamicString("识别失败")))
                             }
-                        }else{
-                            val confidencePct = (bestConfidence * 100).toInt()
-                            val item = RecognizedItem(
-                                title = bestTitle,
-                                confidence = bestConfidence,
-                                bitmap = rotatedBitmap,
-                                details = "识别结果: $bestTitle\n置信度: $confidencePct%\n通过 ML Kit 视觉算法模型分析得出。",
-                            )
+                        } else {
+                            val confidencePct = (bestConfidence * PERCENTAGE_MULTIPLIER).toInt()
+                            val item =
+                                RecognizedItem(
+                                    title = bestTitle,
+                                    confidence = bestConfidence,
+                                    bitmap = rotatedBitmap,
+                                    details = "识别结果: $bestTitle\n置信度: $confidencePct%\n通过 ML Kit 视觉算法模型分析得出。",
+                                )
                             _uiState.update { it.copy(isRecognizing = false, recognizedItem = item) }
                         }
-
                     }
                     .addOnFailureListener { exc ->
                         _uiState.update {
@@ -150,16 +163,21 @@ class RecognitionViewModel
             }
         }
 
-        private fun saveResult(title: String, bitmap: Bitmap) {
+        @Suppress("TooGenericExceptionCaught")
+        private fun saveResult(
+            title: String,
+            bitmap: Bitmap,
+        ) {
             viewModelScope.launch {
                 _uiState.update { it.copy(isSaving = true) }
                 try {
                     val savedPath = saveBitmapToLocalStorage(bitmap)
-                    val newRecord = User(
-                        id = UUID.randomUUID().toString(),
-                        name = title,
-                        url = savedPath,
-                    )
+                    val newRecord =
+                        User(
+                            id = UUID.randomUUID().toString(),
+                            name = title,
+                            url = savedPath,
+                        )
                     val result = repository.saveRecord(newRecord)
                     if (result.isSuccess) {
                         _uiState.update { it.copy(isSaving = false, recognizedItem = null) }
@@ -183,7 +201,7 @@ class RecognitionViewModel
                 }
                 val photoFile = File(photosDir, "recognition_${System.currentTimeMillis()}.jpg")
                 FileOutputStream(photoFile).use { out ->
-                    bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, JPEG_COMPRESSION_QUALITY, out)
                 }
                 photoFile.absolutePath
             }

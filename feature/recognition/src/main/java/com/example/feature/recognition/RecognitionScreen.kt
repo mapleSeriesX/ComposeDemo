@@ -48,16 +48,22 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.suspendCancellableCoroutine
+import java.util.concurrent.ExecutionException
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import kotlin.coroutines.resume
 
+@Suppress("TooGenericExceptionCaught")
 suspend fun getCameraProvider(context: Context): ProcessCameraProvider =
     suspendCancellableCoroutine { continuation ->
         val future = ProcessCameraProvider.getInstance(context)
         future.addListener({
             try {
                 continuation.resume(future.get())
+            } catch (e: ExecutionException) {
+                continuation.resumeWith(Result.failure(e))
+            } catch (e: InterruptedException) {
+                continuation.resumeWith(Result.failure(e))
             } catch (e: Exception) {
                 continuation.resumeWith(Result.failure(e))
             }
@@ -65,9 +71,7 @@ suspend fun getCameraProvider(context: Context): ProcessCameraProvider =
     }
 
 @Composable
-fun RecognitionScreen(
-    viewModel: RecognitionViewModel = hiltViewModel(),
-) {
+fun RecognitionScreen(viewModel: RecognitionViewModel = hiltViewModel()) {
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -88,12 +92,13 @@ fun RecognitionScreen(
         )
     }
 
-    val permissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission(),
-        onResult = { granted: Boolean ->
-            hasCameraPermission = granted
-        },
-    )
+    val permissionLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.RequestPermission(),
+            onResult = { granted: Boolean ->
+                hasCameraPermission = granted
+            },
+        )
 
     LaunchedEffect(Unit) {
         if (!hasCameraPermission) {
@@ -122,6 +127,7 @@ fun RecognitionScreen(
     }
 }
 
+@Suppress("LongMethod", "TooGenericExceptionCaught", "SwallowedException")
 @OptIn(ExperimentalGetImage::class)
 @Composable
 fun CameraPreviewContent(
@@ -136,19 +142,21 @@ fun CameraPreviewContent(
 
     val cameraExecutor: ExecutorService = remember { Executors.newSingleThreadExecutor() }
 
-    val imageAnalysis = remember {
-        ImageAnalysis.Builder()
-            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-            .build()
-    }
+    val imageAnalysis =
+        remember {
+            ImageAnalysis.Builder()
+                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                .build()
+        }
 
-    val preview = remember {
-        Preview.Builder().build().apply {
-            setSurfaceProvider { request ->
-                surfaceRequest = request
+    val preview =
+        remember {
+            Preview.Builder().build().apply {
+                setSurfaceProvider { request ->
+                    surfaceRequest = request
+                }
             }
         }
-    }
 
     LaunchedEffect(preview, lifecycleOwner) {
         val cameraProvider = getCameraProvider(context)
@@ -158,11 +166,12 @@ fun CameraPreviewContent(
             if (shouldCaptureNextFrame) {
                 shouldCaptureNextFrame = false
                 val rotationDegrees = imageProxy.imageInfo.rotationDegrees
-                val bitmap: Bitmap? = try {
-                    imageProxy.toBitmap()
-                } catch (e: Exception) {
-                    null
-                }
+                val bitmap: Bitmap? =
+                    try {
+                        imageProxy.toBitmap()
+                    } catch (_: Exception) {
+                        null
+                    }
                 if (bitmap != null) {
                     onIntent(RecognitionIntent.PerformRecognition(bitmap, rotationDegrees))
                 }
@@ -177,8 +186,8 @@ fun CameraPreviewContent(
                 preview,
                 imageAnalysis,
             )
-        } catch (exc: Exception) {
-            exc.printStackTrace()
+        } catch (_: Exception) {
+            // Ignored
         }
     }
 
@@ -190,16 +199,12 @@ fun CameraPreviewContent(
             )
         }
 
-        // 底部“识别”按钮
-        Button(
-            onClick = { shouldCaptureNextFrame = true },
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 32.dp),
-            enabled = !uiState.isRecognizing && uiState.recognizedItem == null,
-        ) {
-            Text(text = if (uiState.isRecognizing) "识别中..." else "识别")
-        }
+        CameraControlsOverlay(
+            isRecognizing = uiState.isRecognizing,
+            hasRecognizedItem = uiState.recognizedItem != null,
+            onCapture = { shouldCaptureNextFrame = true },
+            modifier = Modifier.align(Alignment.BottomCenter),
+        )
 
         if (uiState.isRecognizing) {
             Box(
@@ -209,53 +214,78 @@ fun CameraPreviewContent(
                 CircularProgressIndicator()
             }
         }
-        uiState.errorMessage?.let { item ->
 
-
-        }
-
-        // 识别成功弹窗
         uiState.recognizedItem?.let { item ->
-            AlertDialog(
-                onDismissRequest = { onIntent(RecognitionIntent.DismissResult) },
-                title = { Text(text = "识别结果: ${item.title}") },
-                text = {
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        Image(
-                            bitmap = item.bitmap.asImageBitmap(),
-                            contentDescription = item.title,
-                            modifier = Modifier
-                                .size(160.dp)
-                                .clip(RoundedCornerShape(8.dp)),
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Text(
-                            text = item.details,
-                            style = MaterialTheme.typography.bodyMedium,
-                        )
-                    }
-                },
-                confirmButton = {
-                    Button(
-                        onClick = {
-                            onIntent(RecognitionIntent.SaveRecognitionResult(item.title, item.bitmap))
-                        },
-                        enabled = !uiState.isSaving,
-                    ) {
-                        Text(text = if (uiState.isSaving) "保存中..." else "保存")
-                    }
-                },
-                dismissButton = {
-                    OutlinedButton(
-                        onClick = { onIntent(RecognitionIntent.DismissResult) },
-                    ) {
-                        Text(text = "取消")
-                    }
-                },
+            RecognitionResultDialog(
+                item = item,
+                isSaving = uiState.isSaving,
+                onIntent = onIntent,
             )
         }
     }
+}
+
+@Composable
+private fun CameraControlsOverlay(
+    isRecognizing: Boolean,
+    hasRecognizedItem: Boolean,
+    onCapture: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Button(
+        onClick = onCapture,
+        modifier = modifier.padding(bottom = 32.dp),
+        enabled = !isRecognizing && !hasRecognizedItem,
+    ) {
+        Text(text = if (isRecognizing) "识别中..." else "识别")
+    }
+}
+
+@Composable
+private fun RecognitionResultDialog(
+    item: RecognizedItem,
+    isSaving: Boolean,
+    onIntent: (RecognitionIntent) -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = { onIntent(RecognitionIntent.DismissResult) },
+        title = { Text(text = "识别结果: ${item.title}") },
+        text = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Image(
+                    bitmap = item.bitmap.asImageBitmap(),
+                    contentDescription = item.title,
+                    modifier =
+                        Modifier
+                            .size(160.dp)
+                            .clip(RoundedCornerShape(8.dp)),
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = item.details,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    onIntent(RecognitionIntent.SaveRecognitionResult(item.title, item.bitmap))
+                },
+                enabled = !isSaving,
+            ) {
+                Text(text = if (isSaving) "保存中..." else "保存")
+            }
+        },
+        dismissButton = {
+            OutlinedButton(
+                onClick = { onIntent(RecognitionIntent.DismissResult) },
+            ) {
+                Text(text = "取消")
+            }
+        },
+    )
 }

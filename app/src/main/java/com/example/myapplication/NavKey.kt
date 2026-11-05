@@ -11,6 +11,5 @@ data object UserList : NavKey
 @Serializable
 data class UserDetail(val userId: String) : NavKey, DarkThemeScreen
 
-
 @Serializable
 data object Recognition : NavKey

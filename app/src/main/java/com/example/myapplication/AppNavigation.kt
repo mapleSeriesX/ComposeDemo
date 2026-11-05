@@ -16,6 +16,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
+import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
@@ -30,7 +32,6 @@ private val topLevelDestinations = setOf(UserList, Recognition)
 
 @Composable
 fun AppNavigation(repository: PreferencesRepository) {
-
     val backStack = rememberNavBackStack(UserList)
     val currentStack by remember { derivedStateOf { backStack.lastOrNull() } }
 
@@ -50,11 +51,12 @@ fun AppNavigation(repository: PreferencesRepository) {
 
     NavigationSuiteScaffold(
         modifier = Modifier.fillMaxSize(),
-        layoutType = if (isTopLevel) {
-            NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(adaptiveInfo)
-        } else {
-            NavigationSuiteType.None
-        },
+        layoutType =
+            if (isTopLevel) {
+                NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(adaptiveInfo)
+            } else {
+                NavigationSuiteType.None
+            },
         navigationSuiteItems = {
             AppDestinations.entries.forEach { destination ->
                 item(
@@ -76,31 +78,39 @@ fun AppNavigation(repository: PreferencesRepository) {
             }
         },
     ) {
-        NavDisplay(
-            backStack = backStack,
-            onBack = { backStack.removeLastOrNull() },
-            entryDecorators = listOf(
+        AppNavDisplay(backStack = backStack)
+    }
+
+    LaunchedEffect(currentStack) {
+        repository.setDarkMode(currentStack is DarkThemeScreen)
+    }
+}
+
+@Composable
+private fun AppNavDisplay(backStack: NavBackStack<NavKey>) {
+    NavDisplay(
+        backStack = backStack,
+        onBack = { backStack.removeLastOrNull() },
+        entryDecorators =
+            listOf(
                 rememberSaveableStateHolderNavEntryDecorator(),
                 rememberViewModelStoreNavEntryDecorator(),
             ),
-            entryProvider = entryProvider {
+        entryProvider =
+            entryProvider {
                 entry<UserList> { _ ->
                     UserScreen { userId -> backStack.add(UserDetail(userId)) }
                 }
                 entry<UserDetail> { (userId) ->
-                    val viewModel = hiltViewModel<UserDetailViewModel, UserDetailViewModel.Factory> { factory ->
-                        factory.create(userId)
-                    }
+                    val viewModel =
+                        hiltViewModel<UserDetailViewModel, UserDetailViewModel.Factory> { factory ->
+                            factory.create(userId)
+                        }
                     UserDetailScreen(viewModel = viewModel)
                 }
                 entry<Recognition> { _ ->
                     RecognitionScreen()
                 }
             },
-        )
-    }
-
-    LaunchedEffect(currentStack) {
-        repository.setDarkMode(currentStack is DarkThemeScreen)
-    }
+    )
 }

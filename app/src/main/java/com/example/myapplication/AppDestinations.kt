@@ -13,6 +13,6 @@ enum class AppDestinations(
     @StringRes val contentDescription: Int,
     val key: NavKey,
 ) {
-    HOME(R.string.home, Icons.Default.Home, R.string.home,UserList),
-    FAVORITES(R.string.favorites, Icons.Default.Favorite, R.string.favorites,Recognition),
+    HOME(R.string.home, Icons.Default.Home, R.string.home, UserList),
+    FAVORITES(R.string.favorites, Icons.Default.Favorite, R.string.favorites, Recognition),
 }

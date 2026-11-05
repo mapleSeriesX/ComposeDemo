@@ -116,45 +116,58 @@ fun UserContent(
         else -> {
             LazyColumn(modifier = modifier.fillMaxSize()) {
                 items(state.users, key = { it.id }) { user ->
-                    val imageModel = remember(user.url) {
-                        if (user.url.startsWith("/")) {
-                            File(user.url)
-                        } else {
-                            user.url
-                        }
-                    }
-                    ListItem(
-                        leadingContent = {
-                            if (user.url.isNotBlank()) {
-                                AsyncImage(
-                                    model = imageModel,
-                                    contentDescription = user.name,
-                                    contentScale = ContentScale.Crop,
-                                    modifier = Modifier
-                                        .size(56.dp)
-                                        .clip(RoundedCornerShape(8.dp)),
-                                )
-                            }
-                        },
-                        headlineContent = {
-                            Text(
-                                text = user.name,
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onSurface,
-                            )
-                        },
-                        modifier =
-                            Modifier.trackClick(
-                                eventName = "user_item_click",
-                                params = mapOf("user_id" to user.id),
-                            ) {
-                                //onIntent(UserIntent.OnUserClick(user.id))
-                            },
+                    UserItem(
+                        user = user,
+                        onUserClick = { userId -> onIntent(UserIntent.OnUserClick(userId)) },
                     )
                 }
             }
         }
     }
+}
+
+@Composable
+private fun UserItem(
+    user: User,
+    onUserClick: (String) -> Unit,
+) {
+    val imageModel =
+        remember(user.url) {
+            if (user.url.startsWith("/")) {
+                File(user.url)
+            } else {
+                user.url
+            }
+        }
+    ListItem(
+        leadingContent = {
+            if (user.url.isNotBlank()) {
+                AsyncImage(
+                    model = imageModel,
+                    contentDescription = user.name,
+                    contentScale = ContentScale.Crop,
+                    modifier =
+                        Modifier
+                            .size(56.dp)
+                            .clip(RoundedCornerShape(8.dp)),
+                )
+            }
+        },
+        headlineContent = {
+            Text(
+                text = user.name,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+        },
+        modifier =
+            Modifier.trackClick(
+                eventName = "user_item_click",
+                params = mapOf("user_id" to user.id),
+            ) {
+                onUserClick(user.id)
+            },
+    )
 }
 
 @Preview(showBackground = true)
