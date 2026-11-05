@@ -40,7 +40,7 @@ class UserRepositoryImpl
         override suspend fun refreshUsers(): Result<Unit> =
             when (val result = apiService.getUsers()) {
                 is NetworkResult.Success -> {
-                    userDao.insertAll(result.data.map { it.toEntity() })
+                    //userDao.insertAll(result.data.map { it.toEntity() })
                     Result.success(Unit)
                 }
                 is NetworkResult.Error -> {
@@ -57,7 +57,7 @@ class UserRepositoryImpl
         override suspend fun refreshUser(id: String): Result<Unit> =
             when (val result = apiService.getUser(id)) {
                 is NetworkResult.Success -> {
-                    userDao.insertUser(result.data.toEntity())
+                    //userDao.insertUser(result.data.toEntity())
                     Result.success(Unit)
                 }
                 is NetworkResult.Error -> {
@@ -67,5 +67,14 @@ class UserRepositoryImpl
                     if (result.throwable is CancellationException) throw result.throwable
                     Result.failure(result.throwable)
                 }
+            }
+
+        override suspend fun saveRecord(user: User): Result<Unit> =
+            try {
+                userDao.insertUser(user.toEntity())
+                Result.success(Unit)
+            } catch (e: Exception) {
+                if (e is CancellationException) throw e
+                Result.failure(e)
             }
     }

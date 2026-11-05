@@ -18,6 +18,9 @@ plugins {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
+        maven { url = uri("https://maven.aliyun.com/repository/public") }
+        maven { url = uri("https://maven.aliyun.com/repository/google") }
+        maven { url = uri("https://maven.aliyun.com/repository/central") }
                google()
         mavenCentral()
     }
@@ -34,3 +37,4 @@ include(":feature:user")
 include(":feature:userDetail")
 include(":data:preferences")
 include(":benchmark")
+include(":feature:recognition")
